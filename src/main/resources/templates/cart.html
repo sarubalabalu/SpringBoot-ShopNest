@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Cart - ShopNest</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="/" class="navbar-brand">Shop<span>Nest</span></a>
+    <div class="navbar-search">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" placeholder="Search products…"/>
+    </div>
+    <ul class="navbar-nav">
+      <li><a href="/">Home</a></li>
+      <li><a href="/shop">Shop</a></li>
+      <li><a href="/orders/my-orders">Orders</a></li>
+      <li><a href="/logout">Logout</a></li>
+      <li>
+        <a href="/cart" class="cart-btn">
+          <i class="fas fa-shopping-cart"></i> Cart
+          <span class="cart-badge" th:text="${cartCount ?: 0}">0</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<div class="page-container">
+  <h1 class="page-title"><i class="fas fa-shopping-cart"></i> My Cart</h1>
+
+  <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+
+  <div th:if="${cart.items.isEmpty()}" style="text-align:center;padding:4rem;background:white;border-radius:16px;">
+    <i class="fas fa-shopping-cart" style="font-size:4rem;color:#ddd;margin-bottom:1rem;display:block;"></i>
+    <h3 style="color:#999;margin-bottom:1rem;">Your cart is empty</h3>
+    <a href="/shop" class="btn-primary"><i class="fas fa-store"></i> Start Shopping</a>
+  </div>
+
+  <div th:unless="${cart.items.isEmpty()}" class="cart-layout">
+    <div>
+      <div th:each="item : ${cart.items}" class="cart-item">
+        <img th:src="${item.product.imageUrl}" th:alt="${item.product.name}" class="cart-item-img"
+             onerror="this.src='https://via.placeholder.com/90x90?text=P'"/>
+        <div class="cart-item-info">
+          <div class="cart-item-name" th:text="${item.product.name}"></div>
+          <div style="font-size:0.82rem;color:#999;margin-bottom:0.4rem;" th:text="${item.product.category}"></div>
+          <div class="cart-item-price" th:text="'₹' + ${#numbers.formatDecimal(item.product.price,1,'COMMA',0,'POINT')}"></div>
+          <form th:action="@{/cart/update}" method="post" class="qty-form" style="display:inline-flex;align-items:center;gap:0.5rem;margin-top:0.5rem;">
+            <input type="hidden" name="itemId" th:value="${item.id}"/>
+            <input type="hidden" name="quantity" class="qty-val" th:value="${item.quantity}"/>
+            <button type="button" class="qty-btn" data-action="minus">-</button>
+            <span class="qty-num" th:text="${item.quantity}"></span>
+            <button type="button" class="qty-btn" data-action="plus">+</button>
+          </form>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-weight:700;font-size:1.05rem;margin-bottom:0.8rem;"
+               th:text="'₹' + ${#numbers.formatDecimal(item.subtotal,1,'COMMA',0,'POINT')}"></div>
+          <form th:action="@{/cart/remove}" method="post">
+            <input type="hidden" name="itemId" th:value="${item.id}"/>
+            <button type="submit" class="cart-remove" title="Remove">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1rem;">
+        <a href="/shop" style="color:#e94560;text-decoration:none;font-weight:600;">
+          <i class="fas fa-arrow-left"></i> Continue Shopping
+        </a>
+      </div>
+    </div>
+
+    <div>
+      <div class="order-summary">
+        <h3>Order Summary</h3>
+        <div th:each="item : ${cart.items}" class="summary-row">
+          <span th:text="${item.product.name}" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+          <span th:text="'₹' + ${#numbers.formatDecimal(item.subtotal,1,'COMMA',0,'POINT')}"></span>
+        </div>
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span th:text="'₹' + ${#numbers.formatDecimal(cart.total,1,'COMMA',0,'POINT')}"></span>
+        </div>
+        <div class="summary-row">
+          <span>Delivery</span>
+          <span style="color:#28a745;">Free</span>
+        </div>
+        <div class="summary-row total">
+          <span>Total</span>
+          <span th:text="'₹' + ${#numbers.formatDecimal(cart.total,1,'COMMA',0,'POINT')}"></span>
+        </div>
+        <a href="/orders/checkout" class="checkout-btn">
+          <i class="fas fa-lock"></i> Proceed to Checkout
+        </a>
+        <div style="text-align:center;margin-top:1rem;font-size:0.8rem;color:#999;">
+          <i class="fas fa-shield-alt"></i> Secure checkout • SSL encrypted
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer style="background:#1a1a2e;color:rgba(255,255,255,0.6);text-align:center;padding:2rem;margin-top:3rem;">
+  <p>&copy; 2024 ShopNest. All rights reserved.</p>
+</footer>
+
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>
